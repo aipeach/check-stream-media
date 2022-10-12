@@ -15,31 +15,7 @@ UA_Dalvik="Dalvik/2.1.0 (Linux; U; Android 9; ALP-AL00 Build/HUAWEIALP-AL00)"
 WOWOW_Cookie=$(curl -s https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies | awk 'NR==3')
 TVer_Cookie="Accept: application/json;pk=BCpkADawqM3ZdH8iYjCnmIpuIRqzCn12gVrtpk_qOePK3J9B6h7MuqOw5T_qIqdzpLvuvb_hTvu7hs-7NsvXnPTYKd9Cgw7YiwI9kFfOOCDDEr20WDEYMjGiLptzWouXXdfE996WWM8myP3Z"
 # 本机S5端口
-s5_port=1080
-
-while getopts ":I:M:L:" optname; do
-    case "$optname" in
-    "I")
-        iface="$OPTARG"
-        useNIC="--interface $iface"
-        ;;
-    "M")
-        if [[ "$OPTARG" == "4" ]]; then
-            NetworkType=4
-        elif [[ "$OPTARG" == "6" ]]; then
-            NetworkType=6
-        fi
-        ;;
-    "L")
-        language="e"
-        ;;
-    ":")
-        echo "Unknown error while processing options"
-        exit 1
-        ;;
-    esac
-
-done
+s5_port=60000
 
 green() {
 	echo -e "\033[32m[info]\033[0m"
@@ -55,12 +31,6 @@ yellow() {
 
 blue() {
 	echo -e "\033[34m[input]\033[0m"
-}
-
-checkInterface() {
-    if [ -z "$iface" ]; then
-        useNIC=""
-    fi
 }
 
 checkOs() {
@@ -164,7 +134,7 @@ checkDependencies() {
 
 MediaUnlockTest_BilibiliHKMCTW() {
     local randsession="$(cat /dev/urandom | head -n 32 | md5sum | head -c 32)"
-    local result=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC --user-agent "${UA_Browser}" -${1} -fsSL --max-time 10 "https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&session=${randsession}&module=bangumi" 2>&1)
+    local result=$(curl -x socks5://127.0.0.1:${s5_port} --user-agent "${UA_Browser}" -fsSL --max-time 10 "https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&session=${randsession}&module=bangumi" 2>&1)
 
     if [[ "$result" != "curl"* ]]; then
         local result="$(echo "${result}" | python -m json.tool 2>/dev/null | grep '"code"' | head -1 | awk '{print $2}' | cut -d ',' -f1)"
@@ -182,7 +152,7 @@ MediaUnlockTest_BilibiliHKMCTW() {
 
 MediaUnlockTest_BilibiliTW() {
     local randsession="$(cat /dev/urandom | head -n 32 | md5sum | head -c 32)"
-    local result=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC --user-agent "${UA_Browser}" -${1} -fsSL --max-time 10 "https://api.bilibili.com/pgc/player/web/playurl?avid=50762638&cid=100279344&qn=0&type=&otype=json&ep_id=268176&fourk=1&fnver=0&fnval=16&session=${randsession}&module=bangumi" 2>&1)
+    local result=$(curl -x socks5://127.0.0.1:${s5_port}  --user-agent "${UA_Browser}" -fsSL --max-time 10 "https://api.bilibili.com/pgc/player/web/playurl?avid=50762638&cid=100279344&qn=0&type=&otype=json&ep_id=268176&fourk=1&fnver=0&fnval=16&session=${randsession}&module=bangumi" 2>&1)
 
     if [[ "$result" != "curl"* ]]; then
         local result="$(echo "${result}" | python -m json.tool 2>/dev/null | grep '"code"' | head -1 | awk '{print $2}' | cut -d ',' -f1)"
@@ -199,14 +169,14 @@ MediaUnlockTest_BilibiliTW() {
 }
 
 MediaUnlockTest_AbemaTV_IPTest() {
-    local tempresult=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC --user-agent "${UA_Dalvik}" -${1} -fsL --write-out %{http_code} --max-time 10 "https://api.abema.io/v1/ip/check?device=android" 2>&1)
+    local tempresult=$(curl -x socks5://127.0.0.1:${s5_port}  --user-agent "${UA_Dalvik}" -fsL --write-out %{http_code} --max-time 10 "https://api.abema.io/v1/ip/check?device=android" 2>&1)
 
     if [[ "$tempresult" == "000" ]]; then
         modifyJsonTemplate 'AbemaTV_result' 'Unknow'
         return
     fi
 
-    result=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC --user-agent "${UA_Dalvik}" -${1} -fsL --max-time 10 "https://api.abema.io/v1/ip/check?device=android" | python -m json.tool 2>/dev/null | grep isoCountryCode | awk '{print $2}' | cut -f2 -d'"')
+    result=$(curl -x socks5://127.0.0.1:${s5_port} --user-agent "${UA_Dalvik}" -fsL --max-time 10 "https://api.abema.io/v1/ip/check?device=android" | python -m json.tool 2>/dev/null | grep isoCountryCode | awk '{print $2}' | cut -f2 -d'"')
 
     if [ -n "$result" ]; then
         if [[ "$result" == "JP" ]]; then
@@ -220,7 +190,7 @@ MediaUnlockTest_AbemaTV_IPTest() {
 }
 
 MediaUnlockTest_BBCiPLAYER() {
-    local tmpresult=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC --user-agent "${UA_Browser}" -${1} ${ssll} -fsL --max-time 10 https://open.live.bbc.co.uk/mediaselector/6/select/version/2.0/mediaset/pc/vpid/bbc_one_london/format/json/jsfunc/JS_callbacks0)
+    local tmpresult=$(curl -x socks5://127.0.0.1:${s5_port}  --user-agent "${UA_Browser}" ${ssll} -fsL --max-time 10 https://open.live.bbc.co.uk/mediaselector/6/select/version/2.0/mediaset/pc/vpid/bbc_one_london/format/json/jsfunc/JS_callbacks0)
 
     if [ "${tmpresult}" = "000" ]; then
         modifyJsonTemplate 'BBC_result' 'Unknow'
@@ -241,7 +211,7 @@ MediaUnlockTest_BBCiPLAYER() {
 }
 
 MediaUnlockTest_Netflix() {
-    local result1=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -${1} --user-agent "${UA_Browser}" -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/81215567" 2>&1)
+    local result1=$(curl -x socks5://127.0.0.1:${s5_port} --user-agent "${UA_Browser}" -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/81215567" 2>&1)
 
     if [[ "$result1" == "404" ]]; then
         modifyJsonTemplate 'Netflix_result' 'No' 'Originals Only'
@@ -252,7 +222,7 @@ MediaUnlockTest_Netflix() {
         return
 
     elif [[ "$result1" == "200" ]]; then
-        local region=$(tr [:lower:] [:upper:] <<<$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -${1} --user-agent "${UA_Browser}" -fs --max-time 10 --write-out %{redirect_url} --output /dev/null "https://www.netflix.com/title/80018499" | cut -d '/' -f4 | cut -d '-' -f1))
+        local region=$(tr [:lower:] [:upper:] <<<$(curl -x socks5://127.0.0.1:${s5_port} --user-agent "${UA_Browser}" -fs --max-time 10 --write-out %{redirect_url} --output /dev/null "https://www.netflix.com/title/80018499" | cut -d '/' -f4 | cut -d '-' -f1))
         if [[ ! -n "$region" ]]; then
             region="US"
         fi
@@ -266,8 +236,8 @@ MediaUnlockTest_Netflix() {
 }
 
 MediaUnlockTest_YouTube_Premium() {
-    local tmpresult=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -${1} -sS -H "Accept-Language: en" "https://www.youtube.com/premium" 2>&1)
-    local region=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC --user-agent "${UA_Browser}" -${1} -sL --max-time 10 "https://www.youtube.com/premium" | grep "countryCode" | sed 's/.*"countryCode"//' | cut -f2 -d'"')
+    local tmpresult=$(curl -x socks5://127.0.0.1:${s5_port} -sS -H "Accept-Language: en" "https://www.youtube.com/premium" 2>&1)
+    local region=$(curl -x socks5://127.0.0.1:${s5_port}  --user-agent "${UA_Browser}" -sL --max-time 10 "https://www.youtube.com/premium" | grep "countryCode" | sed 's/.*"countryCode"//' | cut -f2 -d'"')
 
     if [ -n "$region" ]; then
         sleep 0
@@ -302,7 +272,7 @@ MediaUnlockTest_YouTube_Premium() {
 }
 
 MediaUnlockTest_DisneyPlus() {
-    local PreAssertion=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -${1} --user-agent "${UA_Browser}" -s --max-time 10 -X POST "https://global.edge.bamgrid.com/devices" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -H "content-type: application/json; charset=UTF-8" -d '{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}' 2>&1)
+    local PreAssertion=$(curl -x socks5://127.0.0.1:${s5_port} --user-agent "${UA_Browser}" -s --max-time 10 -X POST "https://global.edge.bamgrid.com/devices" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -H "content-type: application/json; charset=UTF-8" -d '{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}' 2>&1)
 
     if [[ "$PreAssertion" == "curl"* ]] && [[ "$1" == "6" ]]; then
         echo -n -e "\r Disney+:\t\t\t\t${Font_Red}IPv6 Not Support${Font_Suffix}\n"
@@ -315,7 +285,7 @@ MediaUnlockTest_DisneyPlus() {
     local assertion=$(echo $PreAssertion | python -m json.tool 2>/dev/null | grep assertion | cut -f4 -d'"')
     local PreDisneyCookie=$(curl -x socks5://127.0.0.1:${s5_port} -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '1p')
     local disneycookie=$(echo $PreDisneyCookie | sed "s/DISNEYASSERTION/${assertion}/g")
-    local TokenContent=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -${1} --user-agent "${UA_Browser}" -s --max-time 10 -X POST "https://global.edge.bamgrid.com/token" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "$disneycookie")
+    local TokenContent=$(curl -x socks5://127.0.0.1:${s5_port} --user-agent "${UA_Browser}" -s --max-time 10 -X POST "https://global.edge.bamgrid.com/token" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "$disneycookie")
     local isBanned=$(echo $TokenContent | python -m json.tool 2>/dev/null | grep 'forbidden-location')
     local is403=$(echo $TokenContent | grep '403 ERROR')
 
@@ -327,8 +297,8 @@ MediaUnlockTest_DisneyPlus() {
     local fakecontent=$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '8p')
     local refreshToken=$(echo $TokenContent | python -m json.tool 2>/dev/null | grep 'refresh_token' | awk '{print $2}' | cut -f2 -d'"')
     local disneycontent=$(echo $fakecontent | sed "s/ILOVEDISNEY/${refreshToken}/g")
-    local tmpresult=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -${1} --user-agent "${UA_Browser}" -X POST -sSL --max-time 10 "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql" -H "authorization: ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "$disneycontent" 2>&1)
-    local previewcheck=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -${1} -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://disneyplus.com" | grep preview)
+    local tmpresult=$(curl -x socks5://127.0.0.1:${s5_port} --user-agent "${UA_Browser}" -X POST -sSL --max-time 10 "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql" -H "authorization: ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "$disneycontent" 2>&1)
+    local previewcheck=$(curl -x socks5://127.0.0.1:${s5_port} -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://disneyplus.com" | grep preview)
     local isUnabailable=$(echo $previewcheck | grep 'unavailable')
     local region=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep 'countryCode' | cut -f4 -d'"')
     local inSupportedLocation=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep 'inSupportedLocation' | awk '{print $2}' | cut -f1 -d',')
@@ -355,7 +325,7 @@ MediaUnlockTest_DisneyPlus() {
 }
 
 MediaUnlockTest_MyTVSuper() {
-    local result=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -s -${1} --max-time 10 https://www.mytvsuper.com/iptest.php | grep 'HK')
+    local result=$(curl -x socks5://127.0.0.1:${s5_port} -s --max-time 10 https://www.mytvsuper.com/iptest.php | grep 'HK')
 
     if [ -n "$result" ]; then
         modifyJsonTemplate 'MyTVSuper_result' 'Yes'
@@ -510,7 +480,6 @@ runCheck() {
 
 main() {
     checkOs
-    checkInterface
     checkDependencies
     setCronTask
     checkConfig
