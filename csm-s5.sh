@@ -241,7 +241,7 @@ MediaUnlockTest_BBCiPLAYER() {
 }
 
 MediaUnlockTest_Netflix() {
-    local result1=$( -x socks5://127.0.0.1:${s5_port} $useNIC -${1} --user-agent "${UA_Browser}" -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/81215567" 2>&1)
+    local result1=$(curl -x socks5://127.0.0.1:${s5_port} $useNIC -${1} --user-agent "${UA_Browser}" -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/81215567" 2>&1)
 
     if [[ "$result1" == "404" ]]; then
         modifyJsonTemplate 'Netflix_result' 'No' 'Originals Only'
