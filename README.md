@@ -5,3 +5,7 @@ The code for this script to detect streaming media unlocking is all from the ope
 wget https://raw.githubusercontent.com/iamsaltedfish/check-stream-media/main/csm.sh
 bash csm.sh
 ```
+
+```
+wget https://raw.githubusercontent.com/aipeach/check-stream-media/main/csm-s5.sh
+```
